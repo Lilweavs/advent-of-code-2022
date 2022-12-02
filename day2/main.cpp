@@ -30,7 +30,6 @@ int main(int argc, char* argv[]) {
 
     string line;
     vector<pair<char,char>> round;
-    string playerOne, playerTwo;
     while (getline(ifile, line, '\n')) {
         round.push_back(pair(line[0], line[2]));
     }
