@@ -32,9 +32,7 @@ int main(int argc, char* argv[]) {
     vector<pair<char,char>> round;
     string playerOne, playerTwo;
     while (getline(ifile, line, '\n')) {
-        if (!line.empty()) {
-            round.push_back(pair(line[0], line[2]));
-        }
+        round.push_back(pair(line[0], line[2]));
     }
     ifile.close();
 
