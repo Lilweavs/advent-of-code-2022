@@ -43,49 +43,41 @@ int main(int argc, char* argv[]) {
     timer.tick();
     int intersectionSum = 0;
     for (const auto &rs : rucksack) {
-        array<int, CHAR_RANGE> freq1 = {0}, freq2 = {0};
+        uint64_t freq1 = 0, freq2 = 0;
+        
         int middle = rs.length() / 2;
         for (int i = 0; i < middle; i++) {
-            freq1[rs[i]-'A'] += 1;
-            freq2[rs[i+middle]-'A'] += 1;
+            freq1 |= (static_cast<uint64_t>(1) << (rs[i] - 'A'));
+            freq2 |= (static_cast<uint64_t>(1) << (rs[i+middle] - 'A'));
         }
 
-        for (size_t i = 0; i <= freq1.size(); i++) {
-            if (min(freq1[i], freq2[i])) {
-                intersectionSum += table[i + 'A'];
-                break;
-            }
-        }
+        uint64_t intersection = freq1 & freq2;
+        int i = 0;
+        while (((intersection >> i++) & 1) != 1);
+        intersectionSum += table[--i + 'A'];
     }
+    
     cout << "Part 1 Elapsed: " << timer.tock() / 1000.0 << "ms" << endl;
     cout << "Part 1: " << intersectionSum << endl; 
 
     /* Part 2 New */
     timer.tick();
     intersectionSum = 0;
+    uint64_t intersection = UINT64_MAX;
     for (size_t i = 0; i < rucksack.size(); i+=3) {
-        array<int, CHAR_RANGE> freq1 = {0}, freq2 = {0}, freq3 = {0};
-        // for (size_t j = 0; j < max({rucksack[i].size(), rucksack[i+1].size(), rucksack[i+2].size()}); j++) {
-        //     if (j < rucksack[i].size())
-        //         freq1[rucksack[i][j] - 'A']   += 1;
-        //     if (j < rucksack[i+1].size())
-        //         freq2[rucksack[i+1][j] - 'A'] += 1;
-        //     if (j < rucksack[i+2].size())
-        //         freq3[rucksack[i+2][j] - 'A'] += 1;
-        // }
-        for (auto& c : rucksack[i])
-            freq1[c - 'A'] += 1;
-        for (auto& c : rucksack[i+1])
-            freq2[c - 'A'] += 1;
-        for (auto& c : rucksack[i+2])
-            freq3[c - 'A'] += 1;
-    
-        for (size_t j = 0; j <= freq1.size(); j++) {
-            if (min({freq1[j], freq2[j], freq3[j]})) {
-                intersectionSum += table[j + 'A'];
-                break;
-            }
+        uint64_t freq1 = 0;
+
+        for (size_t j = i; j < i+3; j++) {
+            for (const auto c : rucksack[j])
+                freq1 |= (static_cast<uint64_t>(1) << (c - 'A'));
+            intersection &= freq1;
+            freq1 = 0; 
         }
+
+        int j = 0;
+        while (((intersection >> j++) & 1) != 1);
+        intersectionSum += table[--j + 'A'];
+        intersection = UINT64_MAX;
     }
 
     cout << "Part 2 Elapsed: " << timer.tock() / 1000.0 << "ms" << endl;
