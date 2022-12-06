@@ -1,7 +1,5 @@
 #include <iostream>
 #include <fstream>
-#include <vector>
-#include <unordered_set>
 
 #include "clock.h"
 
@@ -12,6 +10,23 @@ using namespace std;
 
 Timer timer;
 
+int solve(string& input, size_t size) {
+    
+    for (size_t i = 0; i < input.length() - size; i++) {
+        uint32_t index = 0;
+        for (size_t j = i; j < i + size; j++) {
+            uint32_t tmp = index;
+            index |= (1U << (input[j] - 'a'));
+            if (tmp == index) { 
+                break; 
+            } else if (j == i + size - 1) {
+                return i + size;
+            } else { /* Do nothing */}
+        }
+    }
+    return -1; /* Shouldn't happen */
+}
+
 int main(int argc, char* argv[]) {
 
     timer.tick();
@@ -19,41 +34,19 @@ int main(int argc, char* argv[]) {
     ifstream ifile("input.txt", std::ios::in);
     getline(ifile, line, '\n');
 
-    unordered_set<char> packetStart;
-
-    int index = 0;
-    for (size_t i = 0; i < line.length() - MARK_LENGTH; i++) {
-        packetStart.insert(line.begin()+i, line.begin() + i + MARK_LENGTH);
-
-        if (packetStart.size() == MARK_LENGTH) {
-            index = i + MARK_LENGTH;
-            break;
-        }
-        packetStart.clear();
-    }
-
-    cout << "Part 1 Elapsed: " << timer.tock() / 1000.0 << "ms" << endl;
-    cout << "Part 1: " << index << endl;
+    cout << "Input Parsing: " << timer.tock() / 1000.0 << "ms" << endl;
 
     timer.tick();
-    index = 0;
-    for (size_t i = 0; i < line.length() - MSG_LENGTH; i++) {
-        for (size_t j = 0; j < i + MSG_LENGTH; j++) {
-            packetStart.insert(line[j]);
-            if (packetStart.size() != (j + 1)) { break; }
-        }
+    int index = solve(line, MARK_LENGTH);
 
-        if (packetStart.size() == MSG_LENGTH) {
-            index = i + MSG_LENGTH;
-            break;
-        }
-        packetStart.clear();
-    }
+    cout << "Part 1 opt Elapsed: " << timer.tock() / 1000.0 << "ms" << endl;
+    cout << "Part 1 opt: " << index << endl;
 
+    timer.tick();
+    index = solve(line, MSG_LENGTH);
+    
     cout << "Part 2 Elapsed: " << timer.tock() / 1000.0 << "ms" << endl;
-    cout << "Part 2: " << index << endl;
-
-    cout << "Input Parsing: " << timer.tock() / 1000.0 << "ms" << endl;
+    cout << "Part 2 : " << index << endl;
 
     return 0;
 }   
