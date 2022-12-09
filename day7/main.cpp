@@ -3,6 +3,7 @@
 #include <vector>
 #include <array>
 #include <unordered_map>
+#include <memory>
 
 #include "clock.h"
 
@@ -15,30 +16,44 @@ struct File {
 };
 
 struct Directory {
-    Directory(Directory* dir) { parent = dir; }
+    Directory(Directory* dir, string n) : parent(dir), name(n) { };
     Directory* parent;
+    string name;
     unordered_map<string, Directory*> children;
     vector<File> files;
-    ~Directory() {
-        delete parent;
-    }
 };
 
 Timer timer;
 
-int traverseTree(Directory* parent, int& count) {
+int traverseTree(Directory* node, int& count) {
     int sum = 0;
 
-    for (const auto& file : parent->files)
+    for (const auto& file : node->files)
         sum += file.size;
 
-    for (const auto& child : parent->children)
+    for (const auto& child : node->children)
         sum += traverseTree(child.second, count);
 
-    if (sum >= 100000)
-        sum = 0;
-    
-    count += sum;
+    if (sum <= 100000 && node->parent != nullptr)
+        count += sum;
+
+    return sum;
+}
+
+int traverseTreeMin(Directory* node, pair<string, int>& minSize, const int dirTotal) {
+    int sum = 0;
+
+    for (const auto& file : node->files)
+        sum += file.size;
+
+    for (const auto& child : node->children)
+        sum += traverseTreeMin(child.second, minSize, dirTotal);
+
+    if (((dirTotal - sum) <= 40000000) && (sum < minSize.second)) {
+        minSize.first = node->name;
+        minSize.second = sum;
+    }
+
     return sum;
 }
 
@@ -48,8 +63,8 @@ int main(int argc, char* argv[]) {
     string line;
     ifstream ifile("input.txt", std::ios::in);
 
-    Directory root(nullptr);
-    root.children["/"] = new Directory(&root);
+    Directory root(nullptr, "");
+    root.children["/"] = new Directory(&root, "/");
     Directory* dirptr = &root;
 
     while (getline(ifile, line)) {
@@ -69,7 +84,7 @@ int main(int argc, char* argv[]) {
 
         if (line.starts_with("dir")) {
             string child(line.begin()+4, line.end());
-            dirptr->children[child] = new Directory(dirptr); 
+            dirptr->children[child] = new Directory(dirptr, child); 
         } else {
             int space = line.find(" ");
             int fileSize = stoi(string(line.begin(), line.begin()+space));
@@ -79,13 +94,16 @@ int main(int argc, char* argv[]) {
     }
     ifile.close();
     
-    int total = 0;
+    int total = 0, dirTotal = 0;
+    pair<string, int> minSize("/", INT_MAX);
     dirptr = &root;
-    traverseTree(dirptr, total);
-
-
+    dirTotal = traverseTree(dirptr, total);
+    traverseTreeMin(dirptr, minSize, dirTotal);
 
     cout << total << endl;
+    cout << dirTotal << endl;
+    cout << "dir: " << minSize.first << endl;
+    cout << "size: " << minSize.second << endl;
 
     return 0;
 }   
