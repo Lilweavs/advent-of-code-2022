@@ -4,6 +4,7 @@
 #include <array>
 #include <regex>
 #include <deque>
+#include <functional>
 
 #include "clock.h"
 
@@ -23,14 +24,14 @@ struct Monkey {
     uint64_t divisor = 1;
     pair<Commands, uint64_t> operation = {Commands::none, 0};
     int cnt = 0;
-};
 
-bool isDivisible(uint64_t item, uint64_t div) {
-    bool tmp = false;
-    if (item % div == 0)
-        tmp = true;
-    return tmp;
-}
+    int nextMonkey(uint64_t item) {
+        int tmp = throw2Monkey[0];
+        if (item % divisor)
+            tmp = throw2Monkey[1];
+        return tmp;
+    }
+};
 
 Timer timer;
 
@@ -40,7 +41,6 @@ int main(int argc, char* argv[]) {
     string line;
     vector<Monkey> monkeys;
     ifstream ifile("input.txt", std::ios::in);
-    // regex rx("([\\*|\\+] )?\\d+");
     regex rx("\\d+");
         
     while (getline(ifile, line, '\n')) {
@@ -92,7 +92,15 @@ int main(int argc, char* argv[]) {
 
     cout << "Input Parsing: " << timer.tock() / 1000.0 << "ms" << endl;
 
-    for (int i = 0; i < 20; i++) {
+    timer.tick();
+    uint64_t mod = 1;
+    for (const auto& monkey: monkeys) {
+        mod *= monkey.divisor;
+    }
+
+    cout << mod << endl;
+
+    for (int i = 0; i < 10000; i++) {
         for (auto& monkey : monkeys) {
 
             while (!monkey.items.empty()) {
@@ -110,16 +118,12 @@ int main(int argc, char* argv[]) {
                     item = (item * item);
                 }
 
-                item /= 3;
+                item = (item % mod);
 
-                bool check = isDivisible(item, monkey.divisor);
-                int whichMonkey = 0;
-                if (check == true)
-                    whichMonkey = monkey.throw2Monkey[0];
-                else
-                    whichMonkey = monkey.throw2Monkey[1];
+                int whichMonkey = monkey.nextMonkey(item);
 
                 monkeys[whichMonkey].items.push_back(item);
+                // test.push_back(whichMonkey);
             }
         }
     }
