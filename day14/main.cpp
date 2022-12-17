@@ -19,24 +19,25 @@ Coords operator-(const Coords &lhs, const Coords &rhs) {
     return Coords{lhs.x - rhs.x, lhs.y - rhs.y};
 }
 
-int simulateSand(vector<string>& grid, Coords& point) {
-    int x = 500;
-    Coords tmp;
-    for (size_t i = 0; i < grid.size(); i++) {
-        if (i == grid.size()-1) {
-            cout << i << endl;
+int simulateSand(vector<string>& grid, Coords& point, int bottom) {
+    int col = 500;
+    for (size_t row = 0; row < grid.size(); row++) {
+        if (row == static_cast<size_t>(bottom)) {
+            point.x = col;
+            point.y = row-1;
+            return 1;
         }
-        char c = grid[i][x]; 
+        char c = grid[row][col]; 
         if (c == 'O' || c == '#') {
-            if (grid[i][x-1] == '.') {
-                x--;
-                i--;
-            } else if (grid[i][x+1] == '.') {
-                x++;
-                i--;
+            if (grid[row][col-1] == '.') {
+                col--;
+                row--;
+            } else if (grid[row][col+1] == '.') {
+                col++;
+                row--;
             } else {
-                point.x = x;
-                point.y = i-1;
+                point.x = col;
+                point.y = row-1;
                 return 1;
             }
         }
@@ -60,17 +61,23 @@ int main(int argc, char* argv[]) {
         grid.emplace_back(tmp);
     }
 
+    int maxy = 0;
     ifstream ifile("input.txt", std::ios::in);
     while (getline(ifile, line, '\n')) {
         sregex_iterator it(line.begin(), line.end(), rx);
 
         vector<Coords> scan;
         while (it != sregex_iterator()) {
-            smatch match = *it++;            
-            scan.push_back(Coords{stoi(match[1].str()),stoi(match[2].str())});
+            smatch match = *it++;
+
+            int tmp = stoi(match[2].str());
+            maxy = (maxy < tmp) ? tmp : maxy;
+
+            scan.push_back(Coords{stoi(match[1].str()),tmp});
         }
         measurements.push_back(scan);
     }
+    maxy += 2;
     ifile.close();
 
     cout << "Input Parsing: " << timer.tock() / 1000.0 << "ms" << endl;
@@ -104,21 +111,34 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    timer.tick();
     Coords tmp;
     int cnt = 0;
-    while (simulateSand(grid, tmp) != -1) {
+    while (simulateSand(grid, tmp, maxy) != -1) {
+        if (tmp.y == maxy-1) { break; }
         grid[tmp.y][tmp.x] = 'O';
         cnt++;
     }
+    cout << "Part 1 Elapsed: " << timer.tock() / 1000.0 << "ms" << endl;
+    cout << "Part 1: " << cnt << endl;
     
-    for (size_t row = 0; row < grid.size(); row++) {
-        for (size_t col = 450; col < grid[row].size(); col++) {
-            cout << grid[row][col];
-        }
-        cout << endl;;
+    timer.tick();
+    while (simulateSand(grid, tmp, maxy) != -1) {
+        grid[tmp.y][tmp.x] = 'O';
+        cnt++;
+        if (tmp.y == 0) { break; }
     }
 
-    cout << "Part 1: " << cnt << endl;
+    cout << "Part 2 Elapsed: " << timer.tock() / 1000.0 << "ms" << endl;
+    cout << "Part 2: " << cnt << endl;
+
+    // for (size_t row = 0; row < 14; row++) {
+    //     for (size_t col = 480; col < 520; col++) {
+    //         cout << grid[row][col];
+    //     }
+    //     cout << endl;;
+    // }
+
     // cout << "Part 2: " << part2(instructions, cargo) << endl;
 
     return 0;
