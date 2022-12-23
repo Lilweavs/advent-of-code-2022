@@ -1,7 +1,5 @@
 #include <iostream>
 #include <fstream>
-#include <vector>
-#include <array>
 #include <regex>
 #include <unordered_map>
 #include <cmath>
@@ -59,9 +57,6 @@ int main(int argc, char* argv[]) {
 
     timer.tick();
     string line;
-    vector<array<int,3>> instructions;
-    array<string,9> cargo;
-
 
     unordered_map<string, Monkey> unSolved;
     unordered_map<string, double> solved;
