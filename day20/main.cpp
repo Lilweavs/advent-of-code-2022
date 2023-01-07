@@ -11,7 +11,6 @@ using namespace std;
 
 struct List {
     List(int64_t a) : value(a) { };
-    List() { };
     List* left;
     List* right;
     int64_t value;
@@ -33,11 +32,9 @@ int main(int argc, char* argv[]) {
     timer.tick();
 
     string line;
-    // vector<int64_t> sequence;
-    // vector<int64_t> mixedSequence;
 
     vector<List*> shuffleOrder;
-    List* listMiddle = new List(0);
+    List* listMiddle = nullptr;
 
     ifstream ifile("input.txt", std::ios::in);
     int i = 0;
