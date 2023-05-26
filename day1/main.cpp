@@ -10,6 +10,8 @@ using namespace std;
 
 Timer timer;
 
+// Test comment
+// what
 int main(int argc, char* argv[]) {
 
     timer.tick();
